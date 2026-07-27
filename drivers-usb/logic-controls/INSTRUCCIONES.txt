@@ -1,0 +1,16 @@
+DRIVER WINUSB - IMPRESORA LOGIC CONTROLS
+==========================================
+Modelos cubiertos: LR2000, LS9208 y serie compatibles Epson ESC/POS
+
+COMO OBTENER EL DRIVER:
+1. Conectar la impresora Logic Controls por USB a tu PC de trabajo
+2. Abrir Zadig (https://zadig.akeo.ie/)
+3. Options -> List All Devices
+4. Seleccionar la impresora de la lista
+5. Elegir driver: WinUSB
+6. Click "Install Driver"
+7. Una vez instalado: Options -> Save/Extract driver
+8. Guardar los archivos .inf, .cat, .sys en ESTA carpeta
+
+Nota: Logic Controls emula protocolo Epson ESC/POS al 99%
+Encoding recomendado: CP858

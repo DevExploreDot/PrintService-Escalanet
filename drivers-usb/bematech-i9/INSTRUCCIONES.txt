@@ -1,0 +1,16 @@
+DRIVER WINUSB - IMPRESORA BEMATECH/ELGIN i9
+============================================
+Modelos cubiertos: Bematech MP-4200 TH, Elgin i9 y variantes
+
+COMO OBTENER EL DRIVER:
+1. Conectar la impresora Bematech/Elgin por USB a tu PC de trabajo
+2. Abrir Zadig (https://zadig.akeo.ie/)
+3. Options -> List All Devices
+4. Seleccionar la impresora de la lista
+5. Elegir driver: WinUSB
+6. Click "Install Driver"
+7. Una vez instalado: Options -> Save/Extract driver
+8. Guardar los archivos .inf, .cat, .sys en ESTA carpeta
+
+VID conocido Bematech: 0x0B2C
+Encoding recomendado para esta marca: CP860 o CP858

@@ -1,0 +1,21 @@
+{
+  "name": "pos-impresor-local",
+  "version": "1.2.0",
+  "description": "Puente de impresion local ESC/POS para EscalaNET - Compatible con Knup, Epson, Bematech, Logic Controls",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "check": "node --check server.js && echo Sintaxis OK"
+  },
+  "keywords": ["escpos", "impresora", "termica", "pos", "escalanet"],
+  "author": "EscalaNET",
+  "license": "ISC",
+  "dependencies": {
+    "@node-escpos/core": "^0.6.0",
+    "@node-escpos/usb-adapter": "^0.3.1",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "usb": "^2.12.0"
+  }
+}
