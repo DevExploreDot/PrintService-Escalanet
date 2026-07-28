@@ -337,9 +337,9 @@ app.post('/imprimir-ticket', async (req, res) => {
       .style('b')
       .tableCustom([
         { text: 'CANT', align: 'LEFT', width: 0.16 },
-        { text: 'DETALLE', align: 'LEFT', width: 0.41 },
+        { text: 'DETALLE', align: 'LEFT', width: 0.42 },
         { text: 'P.UNI', align: 'RIGHT', width: 0.21 },
-        { text: 'TOTAL', align: 'RIGHT', width: 0.22 }
+        { text: 'TOTAL', align: 'RIGHT', width: 0.21 }
       ])
       .style('normal');
 
@@ -355,14 +355,14 @@ app.post('/imprimir-ticket', async (req, res) => {
       if (item.subtotal > 0) {
         printer.tableCustom([
           { text: cantStr, align: 'LEFT', width: 0.16 },
-          { text: String(item.nombre), align: 'LEFT', width: 0.41 },
+          { text: String(item.nombre).substring(0, 13), align: 'LEFT', width: 0.42 },
           { text: Number(pUnit).toFixed(2).replace('.', ','), align: 'RIGHT', width: 0.21 },
-          { text: Number(item.subtotal).toFixed(2).replace('.', ','), align: 'RIGHT', width: 0.22 }
+          { text: Number(item.subtotal).toFixed(2).replace('.', ','), align: 'RIGHT', width: 0.21 }
         ]);
       } else {
-        // Es un borde o extra sin costo: ocultar precio y añadir sangría al detalle
+        // Es un borde o extra sin costo: ocultar cantidad y precio, añadir sangría
         printer.tableCustom([
-          { text: cantStr, align: 'LEFT', width: 0.16 },
+          { text: '', align: 'LEFT', width: 0.16 },
           { text: `  ${String(item.nombre)}`, align: 'LEFT', width: 0.84 }
         ]);
       }
