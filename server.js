@@ -101,12 +101,12 @@ const KNOWN_VENDORS = {
   1046: 'Impresora Térmica (Zjiang/Generica)',
   5380: 'Bixolon',
   1409: 'Logic Controls',
-  2954: 'Bematech',
+  2954: 'Bematech / Elgin',
   1529: 'Star Micronics',
   10032: 'Citizen',
   2655: 'Zebra',
   8137: 'Xprinter (NXP)',
-  1155: 'Xprinter/Rongta (STM)',
+  1155: 'Xprinter/Rongta/Elgin (STM)',
   3322: 'Sam4s'
 };
 
