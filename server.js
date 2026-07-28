@@ -16,7 +16,7 @@ const PUERTO = 5000;
 
 // Cambia esto por el dominio real de tu sistema en Hostinger
 const ORIGENES_PERMITIDOS = [
-  'https://zapinet.escalanet.com.bo/', // Tu dominio real
+  'https://zapinet.escalanet.com.bo', // Tu dominio real
   'http://localhost:8080', // para cuando pruebes en desarrollo
 ];
 
