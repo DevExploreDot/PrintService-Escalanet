@@ -110,6 +110,13 @@ const KNOWN_VENDORS = {
   3322: 'Sam4s'
 };
 
+const KNOWN_MODELS = {
+  '1208:514': 'Epson TM-T20',
+  '1208:3605': 'Epson TM-T20II (Modelo M267A)',
+  '1208:3616': 'Epson TM-T20III',
+  '1208:3626': 'Epson TM-T88VI'
+};
+
 app.get('/api/detectar', (req, res) => {
   let listado = [];
   try {
@@ -117,11 +124,21 @@ app.get('/api/detectar', (req, res) => {
     // sin depender de listas internas de VID conocidos — funciona con cualquier marca
     const dispositivos = usbRaw.getDeviceList();
     listado = dispositivos.map((d) => {
-      const vendorName = KNOWN_VENDORS[d.deviceDescriptor.idVendor] || 'Dispositivo USB';
+      const vid = d.deviceDescriptor.idVendor;
+      const pid = d.deviceDescriptor.idProduct;
+      const key = `${vid}:${pid}`;
+      
+      let deviceName = KNOWN_MODELS[key] || KNOWN_VENDORS[vid] || 'Dispositivo USB';
+      
+      // Si es Epson pero no conocemos el modelo exacto, le agregamos TM Series
+      if (vid === 1208 && !KNOWN_MODELS[key]) {
+        deviceName = 'Epson (TM-T20II u otro)';
+      }
+
       return {
-        vid: d.deviceDescriptor.idVendor,
-        pid: d.deviceDescriptor.idProduct,
-        name: `${vendorName} (VID: ${d.deviceDescriptor.idVendor} | PID: ${d.deviceDescriptor.idProduct})`,
+        vid: vid,
+        pid: pid,
+        name: `${deviceName} (VID: ${vid} | PID: ${pid})`,
       };
     });
   } catch (error) {
