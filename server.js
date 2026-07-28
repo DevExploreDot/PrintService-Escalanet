@@ -8,8 +8,40 @@ const USB = require('@node-escpos/usb-adapter');
 
 const fs = require('fs');
 const path = require('path');
+const { execSync } = require('child_process');
 // Acceso de bajo nivel a USB: lista TODOS los dispositivos sin filtrar por marca
 const usbRaw = require('usb');
+
+// Adaptador para escribir directamente a una ruta de red o impresora compartida en Windows
+class WindowsSMBAdapter {
+  constructor(printerShareName) {
+    if (printerShareName.startsWith('\\\\')) {
+      this.path = printerShareName;
+    } else {
+      this.path = `\\\\127.0.0.1\\${printerShareName}`;
+    }
+  }
+  open(cb) {
+    try {
+      this.stream = fs.createWriteStream(this.path);
+      this.stream.on('open', () => cb && cb(null));
+      this.stream.on('error', (err) => cb && cb(err));
+    } catch (e) {
+      if (cb) cb(e);
+    }
+  }
+  write(data, cb) {
+    if (this.stream) this.stream.write(data, cb);
+    else if (cb) cb(new Error('Stream no abierto'));
+  }
+  close(cb) {
+    if (this.stream) {
+      this.stream.end();
+      this.stream = null;
+    }
+    if (cb) cb(null);
+  }
+}
 
 const app = express();
 const PUERTO = 5000;
@@ -95,6 +127,28 @@ app.get('/api/detectar', (req, res) => {
   } catch (error) {
     console.error('Error listando dispositivos USB:', error.message || error);
   }
+
+  // --- NUEVO: Buscar impresoras compartidas en Windows (SMB) ---
+  try {
+    const stdout = execSync('wmic printer get Name,ShareName /format:csv', { encoding: 'utf-8', stdio: ['pipe', 'pipe', 'ignore'] });
+    const lineas = stdout.trim().split('\n');
+    for (let i = 1; i < lineas.length; i++) {
+      const partes = lineas[i].trim().split(',');
+      if (partes.length >= 3) {
+        const shareName = partes[2].trim();
+        if (shareName) {
+           listado.push({
+             vid: 'smb',
+             pid: shareName,
+             name: `Red Compartida (Windows): ${shareName}`
+           });
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error listando impresoras de red:', error.message);
+  }
+  // -------------------------------------------------------------
 
   // Impresora virtual siempre disponible para pruebas sin gastar papel
   listado.push({
@@ -198,9 +252,13 @@ app.post('/imprimir-ticket', async (req, res) => {
 
   let device;
   try {
-    device = new USB(parseInt(vid), parseInt(pid));
+    if (vid === 'smb') {
+      device = new WindowsSMBAdapter(pid); // pid almacena el shareName
+    } else {
+      device = new USB(parseInt(vid), parseInt(pid));
+    }
   } catch (error) {
-    return res.status(503).json({ ok: false, mensaje: 'No se encontró la impresora USB configurada. Revisá que esté conectada y encendida.' });
+    return res.status(503).json({ ok: false, mensaje: 'No se encontró la impresora configurada. Revisá que esté conectada y encendida.' });
   }
 
   try {
