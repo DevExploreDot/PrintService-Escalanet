@@ -58,17 +58,35 @@ function guardarConfig(config) {
  * para que en la primera configuración de la sucursal se elija cuál es la impresora.
  * También devuelve cuál está configurada actualmente en config.json.
  */
+const KNOWN_VENDORS = {
+  1208: 'Epson',
+  4070: 'Impresora Térmica (Knup/Generica)',
+  1046: 'Impresora Térmica (Zjiang/Generica)',
+  5380: 'Bixolon',
+  1409: 'Logic Controls',
+  2954: 'Bematech',
+  1529: 'Star Micronics',
+  10032: 'Citizen',
+  2655: 'Zebra',
+  8137: 'Xprinter (NXP)',
+  1155: 'Xprinter/Rongta (STM)',
+  3322: 'Sam4s'
+};
+
 app.get('/api/detectar', (req, res) => {
   let listado = [];
   try {
     // getDeviceList() lista absolutamente todo lo conectado por USB (impresora, mouse, hub...)
     // sin depender de listas internas de VID conocidos — funciona con cualquier marca
     const dispositivos = usbRaw.getDeviceList();
-    listado = dispositivos.map((d) => ({
-      vid: d.deviceDescriptor.idVendor,
-      pid: d.deviceDescriptor.idProduct,
-      name: `Dispositivo USB (VID: ${d.deviceDescriptor.idVendor} | PID: ${d.deviceDescriptor.idProduct})`,
-    }));
+    listado = dispositivos.map((d) => {
+      const vendorName = KNOWN_VENDORS[d.deviceDescriptor.idVendor] || 'Dispositivo USB';
+      return {
+        vid: d.deviceDescriptor.idVendor,
+        pid: d.deviceDescriptor.idProduct,
+        name: `${vendorName} (VID: ${d.deviceDescriptor.idVendor} | PID: ${d.deviceDescriptor.idProduct})`,
+      };
+    });
   } catch (error) {
     console.error('Error listando dispositivos USB:', error.message || error);
   }
