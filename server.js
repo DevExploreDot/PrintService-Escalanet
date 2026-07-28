@@ -46,15 +46,16 @@ class WindowsSMBAdapter {
 const app = express();
 const PUERTO = 5000;
 
-// Ancho del ticket en CARACTERES (no en mm). Esto es lo que estaba mal:
-// tenías width: 32, que es el ancho típico de una impresora de 58mm.
-// Tu impresora de referencia (POS-8330) es de 80mm, y una térmica de 80mm
-// con la fuente normal (font A) imprime 48 caracteres por línea, no 32.
-// Por eso sobraba espacio a la derecha: la tabla se armaba pensando en
-// una hoja angosta, dentro de una hoja que en realidad es más ancha.
-// Si tras probar ves que 48 se pasa un poco (dependiendo del modelo/driver),
-// probá con 42, que es el otro valor común en térmicas de 80mm.
-const ANCHO_TICKET = 48;
+// Ancho del ticket en CARACTERES (no en mm).
+// Probamos 48 (el estándar de una Epson original de 80mm) pero en esta
+// impresora se desbordaba: cada línea que llegaba al margen derecho se
+// cortaba a la mitad y lo que sobraba se iba solo a una línea nueva
+// (por eso veías "TOTA" / "L" separados, o "216." / "0" separados —
+// no era un problema de decimales, era el mismo número partido en dos).
+// Muchas térmicas genéricas de 80mm (no-Epson) solo soportan 42
+// caracteres reales por línea con la fuente normal, así que bajamos a
+// ese valor. Si con 42 todavía se corta algo, probá con 40.
+const ANCHO_TICKET = 42;
 const LINEA_DIVISORIA = '-'.repeat(ANCHO_TICKET);
 
 // Cambia esto por el dominio real de tu sistema en Hostinger
@@ -303,7 +304,7 @@ app.post('/imprimir-ticket', async (req, res) => {
     // 2. CONFIGURAR LA IMPRESORA
     // encoding: 'GB18030' o 'cp858' permite imprimir tildes y caracteres especiales (ñ, á, etc.)
     // CP858 cubre tildes y ñ en térmicas genéricas (Knup, Bematech, Logic Controls, Epson)
-    // Usamos ANCHO_TICKET (48 = estándar para térmicas de 80mm con font A) en vez de 32.
+    // Usamos ANCHO_TICKET (42 caracteres reales, ajustado para esta impresora) en vez de un valor fijo.
     const printer = new Printer(device, { encoding: encoding || 'CP858', width: ANCHO_TICKET });
 
     // 3. ENVIAR COMANDOS DE IMPRESIÓN
@@ -477,6 +478,7 @@ app.post('/imprimir-ticket', async (req, res) => {
       .style('b')
       .text('!GRACIAS POR SU COMPRA!')
       .style('normal')
+      .text('')
       .text('')      
       .text('');
 
