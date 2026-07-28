@@ -35,10 +35,15 @@ app.use((req, res, next) => {
 // ---------------------------------------------------------------
 // Configuración persistente por PC (se setea una sola vez por sucursal)
 // ---------------------------------------------------------------
-const CONFIG_PATH = path.join(
-  process.pkg ? path.dirname(process.execPath) : __dirname,
-  'config.json'
-);
+const appDataPath = process.env.APPDATA 
+  ? path.join(process.env.APPDATA, 'POSPrinterEscalaNET') 
+  : path.join(process.pkg ? path.dirname(process.execPath) : __dirname, 'data');
+
+if (!fs.existsSync(appDataPath)) {
+  fs.mkdirSync(appDataPath, { recursive: true });
+}
+
+const CONFIG_PATH = path.join(appDataPath, 'config.json');
 
 function leerConfig() {
   try {
