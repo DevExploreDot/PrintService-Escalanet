@@ -46,6 +46,17 @@ class WindowsSMBAdapter {
 const app = express();
 const PUERTO = 5000;
 
+// Ancho del ticket en CARACTERES (no en mm). Esto es lo que estaba mal:
+// tenías width: 32, que es el ancho típico de una impresora de 58mm.
+// Tu impresora de referencia (POS-8330) es de 80mm, y una térmica de 80mm
+// con la fuente normal (font A) imprime 48 caracteres por línea, no 32.
+// Por eso sobraba espacio a la derecha: la tabla se armaba pensando en
+// una hoja angosta, dentro de una hoja que en realidad es más ancha.
+// Si tras probar ves que 48 se pasa un poco (dependiendo del modelo/driver),
+// probá con 42, que es el otro valor común en térmicas de 80mm.
+const ANCHO_TICKET = 48;
+const LINEA_DIVISORIA = '-'.repeat(ANCHO_TICKET);
+
 // Cambia esto por el dominio real de tu sistema en Hostinger
 const ORIGENES_PERMITIDOS = [
   'https://zapinet.escalanet.com.bo', // Tu dominio real
@@ -292,8 +303,8 @@ app.post('/imprimir-ticket', async (req, res) => {
     // 2. CONFIGURAR LA IMPRESORA
     // encoding: 'GB18030' o 'cp858' permite imprimir tildes y caracteres especiales (ñ, á, etc.)
     // CP858 cubre tildes y ñ en térmicas genéricas (Knup, Bematech, Logic Controls, Epson)
-    // Agregamos width: 32 que es el estándar para impresoras genéricas de 58mm.
-    const printer = new Printer(device, { encoding: encoding || 'CP858', width: 32 });
+    // Usamos ANCHO_TICKET (48 = estándar para térmicas de 80mm con font A) en vez de 32.
+    const printer = new Printer(device, { encoding: encoding || 'CP858', width: ANCHO_TICKET });
 
     // 3. ENVIAR COMANDOS DE IMPRESIÓN
     
@@ -331,7 +342,7 @@ app.post('/imprimir-ticket', async (req, res) => {
       .style('b')
       .text(datos.sucursal_ciudad || '')
       .style('normal')
-      .text('--------------------------------');
+      .text(LINEA_DIVISORIA);
 
     // c. Datos del cliente y venta
     printer
@@ -348,7 +359,7 @@ app.post('/imprimir-ticket', async (req, res) => {
         { text: 'NIT/CI:', align: 'LEFT', width: 0.35, style: 'b' },
         { text: String(datos.nit || ''), align: 'LEFT', width: 0.65 }
       ])
-      .text('--------------------------------');
+      .text(LINEA_DIVISORIA);
 
     // d. Cabecera de la tabla de productos (4 columnas ajustadas a porcentajes exactos)
     printer
@@ -369,7 +380,7 @@ app.post('/imprimir-ticket', async (req, res) => {
       let cantStr = Number(item.cantidad).toFixed(2).replace('.', ',');
       
       if (item.subtotal > 0) {
-        let maxNameLen = 13; // 42% de 32 caracteres
+        let maxNameLen = Math.floor(0.42 * ANCHO_TICKET); // 42% del ancho real del ticket
         let nombreLargo = String(item.nombre);
         
         // Primera línea con cantidades y precios
@@ -404,7 +415,7 @@ app.post('/imprimir-ticket', async (req, res) => {
 
     // f. Totales (Alineados a la derecha)
     printer
-      .text('--------------------------------')
+      .text(LINEA_DIVISORIA)
       .tableCustom([
         { text: 'SUBTOTAL:', align: 'RIGHT', width: 0.65, style: 'b' },
         { text: Number(datos.subtotal || 0).toFixed(2), align: 'RIGHT', width: 0.35 }
@@ -443,7 +454,7 @@ app.post('/imprimir-ticket', async (req, res) => {
       .text('')
       .align('lt')
       .text(`SON: ${datos.total_letras || ''}`)
-      .text('--------------------------------')
+      .text(LINEA_DIVISORIA)
       .text(`IMPRESO POR: ${datos.cajero || ''}`)
       .text(`EN FECHA: ${new Date().toLocaleString()}`);
       
@@ -461,12 +472,11 @@ app.post('/imprimir-ticket', async (req, res) => {
     }
 
     printer
-      .text('--------------------------------')
+      .text(LINEA_DIVISORIA)
       .align('ct')
       .style('b')
       .text('!GRACIAS POR SU COMPRA!')
       .style('normal')
-      .text('')
       .text('')      
       .text('');
 
