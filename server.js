@@ -366,17 +366,33 @@ app.post('/imprimir-ticket', async (req, res) => {
       // Calculamos el precio unitario (si no viene explícito)
       let pUnit = item.precio !== undefined ? item.precio : (item.cantidad > 0 ? (item.subtotal / item.cantidad) : 0);
       
-      // Aseguramos que la cantidad tenga 2 decimales si el diseño lo pide, sino lo dejamos como viene. 
-      // Por seguridad y parecido a la imagen, usamos Number(item.cantidad).toFixed(2).replace('.', ',')
       let cantStr = Number(item.cantidad).toFixed(2).replace('.', ',');
       
       if (item.subtotal > 0) {
+        let maxNameLen = 13; // 42% de 32 caracteres
+        let nombreLargo = String(item.nombre);
+        
+        // Primera línea con cantidades y precios
         printer.tableCustom([
           { text: cantStr, align: 'LEFT', width: 0.16 },
-          { text: String(item.nombre).substring(0, 13), align: 'LEFT', width: 0.42 },
+          { text: nombreLargo.substring(0, maxNameLen), align: 'LEFT', width: 0.42 },
           { text: Number(pUnit).toFixed(2).replace('.', ','), align: 'RIGHT', width: 0.21 },
           { text: Number(item.subtotal).toFixed(2).replace('.', ','), align: 'RIGHT', width: 0.21 }
         ]);
+
+        // Si el nombre es más largo de lo que entra, imprimimos las líneas sobrantes abajo
+        let charsImpresos = maxNameLen;
+        while (charsImpresos < nombreLargo.length) {
+          let pedazo = nombreLargo.substring(charsImpresos, charsImpresos + maxNameLen);
+          printer.tableCustom([
+            { text: '', align: 'LEFT', width: 0.16 },
+            { text: pedazo, align: 'LEFT', width: 0.42 },
+            { text: '', align: 'RIGHT', width: 0.21 },
+            { text: '', align: 'RIGHT', width: 0.21 }
+          ]);
+          charsImpresos += maxNameLen;
+        }
+
       } else {
         // Es un borde o extra sin costo: ocultar cantidad y precio, añadir sangría
         printer.tableCustom([
