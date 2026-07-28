@@ -329,26 +329,40 @@ app.post('/imprimir-ticket', async (req, res) => {
       ])
       .text('--------------------------------');
 
-    // d. Cabecera de la tabla de productos (3 columnas recomendadas para ticket)
+    // d. Cabecera de la tabla de productos (4 columnas para igualar diseño web)
     printer
       .style('b')
       .tableCustom([
-        { text: 'CANT', align: 'LEFT', width: 0.15 },
-        { text: 'DETALLE', align: 'LEFT', width: 0.55 },
-        { text: 'TOTAL', align: 'RIGHT', width: 0.30 }
+        { text: 'CANT.', align: 'LEFT', width: 0.12 },
+        { text: 'DETALLE', align: 'LEFT', width: 0.45 },
+        { text: 'P.UNIT', align: 'RIGHT', width: 0.18 },
+        { text: 'TOTAL', align: 'RIGHT', width: 0.25 }
       ])
       .style('normal');
 
     // e. Filas de productos
     (datos.items || []).forEach(item => {
-      // Si el precio/subtotal es 0 (ej: un borde o salsa extra), no mostramos precio
-      let subtotalStr = item.subtotal > 0 ? Number(item.subtotal).toFixed(2) : '';
+      // Calculamos el precio unitario (si no viene explícito)
+      let pUnit = item.precio !== undefined ? item.precio : (item.cantidad > 0 ? (item.subtotal / item.cantidad) : 0);
       
-      printer.tableCustom([
-        { text: `${item.cantidad}`, align: 'LEFT', width: 0.15 },
-        { text: String(item.nombre), align: 'LEFT', width: 0.55 },
-        { text: subtotalStr, align: 'RIGHT', width: 0.30 }
-      ]);
+      // Aseguramos que la cantidad tenga 2 decimales si el diseño lo pide, sino lo dejamos como viene. 
+      // Por seguridad y parecido a la imagen, usamos Number(item.cantidad).toFixed(2).replace('.', ',')
+      let cantStr = Number(item.cantidad).toFixed(2).replace('.', ',');
+      
+      if (item.subtotal > 0) {
+        printer.tableCustom([
+          { text: cantStr, align: 'LEFT', width: 0.12 },
+          { text: String(item.nombre), align: 'LEFT', width: 0.45 },
+          { text: Number(pUnit).toFixed(2).replace('.', ','), align: 'RIGHT', width: 0.18 },
+          { text: Number(item.subtotal).toFixed(2).replace('.', ','), align: 'RIGHT', width: 0.25 }
+        ]);
+      } else {
+        // Es un borde o extra sin costo: ocultar precio y añadir sangría al detalle
+        printer.tableCustom([
+          { text: cantStr, align: 'LEFT', width: 0.12 },
+          { text: `  ${String(item.nombre)}`, align: 'LEFT', width: 0.88 }
+        ]);
+      }
     });
 
     // f. Totales (Alineados a la derecha)
@@ -415,6 +429,8 @@ app.post('/imprimir-ticket', async (req, res) => {
       .style('b')
       .text('!GRACIAS POR SU COMPRA!')
       .style('normal')
+      .text('')
+      .text('')      
       .text('');
 
     // 6. ABRIR CAJÓN MONEDERO
