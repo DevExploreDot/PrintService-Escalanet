@@ -367,9 +367,9 @@ app.post('/imprimir-ticket', async (req, res) => {
       .style('b')
       .tableCustom([
         { text: 'CANT', align: 'LEFT', width: 0.16 },
-        { text: 'DETALLE', align: 'LEFT', width: 0.42 },
-        { text: 'P.UNI', align: 'RIGHT', width: 0.21 },
-        { text: 'TOTAL', align: 'RIGHT', width: 0.21 }
+        { text: 'DETALLE', align: 'LEFT', width: 0.44 },
+        { text: 'P.UNI', align: 'RIGHT', width: 0.20 },
+        { text: 'TOTAL', align: 'RIGHT', width: 0.20 }
       ])
       .style('normal');
 
