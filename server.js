@@ -381,15 +381,15 @@ app.post('/imprimir-ticket', async (req, res) => {
       let cantStr = Number(item.cantidad).toFixed(2).replace('.', ',');
       
       if (item.subtotal > 0) {
-        let maxNameLen = Math.floor(0.42 * ANCHO_TICKET); // 42% del ancho real del ticket
+        let maxNameLen = Math.floor(0.46 * ANCHO_TICKET); // 46% del ancho real del ticket
         let nombreLargo = String(item.nombre);
         
         // Primera línea con cantidades y precios
         printer.tableCustom([
-          { text: cantStr, align: 'LEFT', width: 0.16 },
-          { text: nombreLargo.substring(0, maxNameLen), align: 'LEFT', width: 0.42 },
-          { text: Number(pUnit).toFixed(2).replace('.', ','), align: 'RIGHT', width: 0.21 },
-          { text: Number(item.subtotal).toFixed(2).replace('.', ','), align: 'RIGHT', width: 0.21 }
+          { text: cantStr, align: 'LEFT', width: 0.14 },
+          { text: nombreLargo.substring(0, maxNameLen), align: 'LEFT', width: 0.46 },
+          { text: Number(pUnit).toFixed(2).replace('.', ','), align: 'RIGHT', width: 0.20 },
+          { text: Number(item.subtotal).toFixed(2).replace('.', ','), align: 'RIGHT', width: 0.20 }
         ]);
 
         // Si el nombre es más largo de lo que entra, imprimimos las líneas sobrantes abajo
@@ -397,10 +397,10 @@ app.post('/imprimir-ticket', async (req, res) => {
         while (charsImpresos < nombreLargo.length) {
           let pedazo = nombreLargo.substring(charsImpresos, charsImpresos + maxNameLen);
           printer.tableCustom([
-            { text: '', align: 'LEFT', width: 0.16 },
-            { text: pedazo, align: 'LEFT', width: 0.42 },
-            { text: '', align: 'RIGHT', width: 0.21 },
-            { text: '', align: 'RIGHT', width: 0.21 }
+            { text: '', align: 'LEFT', width: 0.14 },
+            { text: pedazo, align: 'LEFT', width: 0.46 },
+            { text: '', align: 'RIGHT', width: 0.20 },
+            { text: '', align: 'RIGHT', width: 0.20 }
           ]);
           charsImpresos += maxNameLen;
         }
@@ -408,8 +408,8 @@ app.post('/imprimir-ticket', async (req, res) => {
       } else {
         // Es un borde o extra sin costo: ocultar cantidad y precio, añadir sangría
         printer.tableCustom([
-          { text: '', align: 'LEFT', width: 0.16 },
-          { text: `  ${String(item.nombre)}`, align: 'LEFT', width: 0.84 }
+          { text: '', align: 'LEFT', width: 0.14 },
+          { text: `  ${String(item.nombre)}`, align: 'LEFT', width: 0.86 }
         ]);
       }
     });
