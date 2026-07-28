@@ -102,6 +102,7 @@ const KNOWN_VENDORS = {
   5380: 'Bixolon',
   1409: 'Logic Controls',
   2954: 'Bematech / Elgin',
+  2860: 'Bematech / Elgin (0x0B2C)',
   1529: 'Star Micronics',
   10032: 'Citizen',
   2655: 'Zebra',
