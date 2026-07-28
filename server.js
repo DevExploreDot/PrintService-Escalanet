@@ -274,8 +274,8 @@ app.post('/imprimir-ticket', async (req, res) => {
     // 2. CONFIGURAR LA IMPRESORA
     // encoding: 'GB18030' o 'cp858' permite imprimir tildes y caracteres especiales (ñ, á, etc.)
     // CP858 cubre tildes y ñ en térmicas genéricas (Knup, Bematech, Logic Controls, Epson)
-    // Se puede cambiar por sucursal guardando otro encoding en config.json
-    const printer = new Printer(device, { encoding: encoding || 'CP858' });
+    // Agregamos width: 32 que es el estándar para impresoras genéricas de 58mm.
+    const printer = new Printer(device, { encoding: encoding || 'CP858', width: 32 });
 
     // 3. ENVIAR COMANDOS DE IMPRESIÓN
     
@@ -293,7 +293,7 @@ app.post('/imprimir-ticket', async (req, res) => {
         const img = await Image.load(buffer, mimeType);
         
         // raster() suele ser mucho más compatible que image() en impresoras genéricas
-        printer.align('ct').raster(img, 'dwdw'); 
+        printer.align('ct').raster(img); 
       } catch (err) {
         console.error("Error cargando logo en impresora:", err.message);
       }
@@ -336,14 +336,14 @@ app.post('/imprimir-ticket', async (req, res) => {
       ])
       .text('--------------------------------');
 
-    // d. Cabecera de la tabla de productos (4 columnas para igualar diseño web)
+    // d. Cabecera de la tabla de productos (4 columnas ajustadas para 32 caracteres)
     printer
       .style('b')
       .tableCustom([
-        { text: 'CANT.', align: 'LEFT', width: 0.12 },
-        { text: 'DETALLE', align: 'LEFT', width: 0.45 },
-        { text: 'P.UNIT', align: 'RIGHT', width: 0.18 },
-        { text: 'TOTAL', align: 'RIGHT', width: 0.25 }
+        { text: 'CANT', align: 'LEFT', width: 0.15 },
+        { text: 'DETALLE', align: 'LEFT', width: 0.44 },
+        { text: 'P.UNI', align: 'RIGHT', width: 0.19 },
+        { text: 'TOTAL', align: 'RIGHT', width: 0.22 }
       ])
       .style('normal');
 
@@ -358,16 +358,16 @@ app.post('/imprimir-ticket', async (req, res) => {
       
       if (item.subtotal > 0) {
         printer.tableCustom([
-          { text: cantStr, align: 'LEFT', width: 0.12 },
-          { text: String(item.nombre), align: 'LEFT', width: 0.45 },
-          { text: Number(pUnit).toFixed(2).replace('.', ','), align: 'RIGHT', width: 0.18 },
-          { text: Number(item.subtotal).toFixed(2).replace('.', ','), align: 'RIGHT', width: 0.25 }
+          { text: cantStr, align: 'LEFT', width: 0.15 },
+          { text: String(item.nombre), align: 'LEFT', width: 0.44 },
+          { text: Number(pUnit).toFixed(2).replace('.', ','), align: 'RIGHT', width: 0.19 },
+          { text: Number(item.subtotal).toFixed(2).replace('.', ','), align: 'RIGHT', width: 0.22 }
         ]);
       } else {
         // Es un borde o extra sin costo: ocultar precio y añadir sangría al detalle
         printer.tableCustom([
-          { text: cantStr, align: 'LEFT', width: 0.12 },
-          { text: `  ${String(item.nombre)}`, align: 'LEFT', width: 0.88 }
+          { text: cantStr, align: 'LEFT', width: 0.15 },
+          { text: `  ${String(item.nombre)}`, align: 'LEFT', width: 0.85 }
         ]);
       }
     });
