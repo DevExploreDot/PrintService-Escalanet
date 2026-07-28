@@ -282,13 +282,20 @@ app.post('/imprimir-ticket', async (req, res) => {
     // a. Logotipo (si existe)
     if (datos.logo) {
       try {
+        // Obtenemos el tipo de imagen (ej. image/png o image/jpeg), por defecto png
+        const mimeTypeMatch = datos.logo.match(/^data:(image\/\w+);base64,/);
+        const mimeType = mimeTypeMatch ? mimeTypeMatch[1] : 'image/png';
+        
         const base64Data = datos.logo.replace(/^data:image\/\w+;base64,/, "");
         const buffer = Buffer.from(base64Data, 'base64');
-        const img = await Image.load(buffer);
-        // Imprimir imagen centrada
-        printer.align('ct').image(img, 's8'); 
+        
+        // Pasamos el mimeType para evitar el error "Invalid file type"
+        const img = await Image.load(buffer, mimeType);
+        
+        // raster() suele ser mucho más compatible que image() en impresoras genéricas
+        printer.align('ct').raster(img, 'dwdw'); 
       } catch (err) {
-        console.error("Error cargando logo en impresora:", err);
+        console.error("Error cargando logo en impresora:", err.message);
       }
     }
 
