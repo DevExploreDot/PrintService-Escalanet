@@ -319,30 +319,26 @@ app.post('/imprimir-ticket', async (req, res) => {
     printer
       .align('lt')
       .tableCustom([
-        { text: 'NRO.:', align: 'LEFT', width: 0.3, style: 'b' },
-        { text: String(datos.ventaId || ''), align: 'LEFT', width: 0.7 }
+        { text: 'NRO.:', align: 'LEFT', width: 0.35, style: 'b' },
+        { text: String(datos.ventaId || ''), align: 'LEFT', width: 0.65 }
       ])
       .tableCustom([
-        { text: 'SEÑOR(ES):', align: 'LEFT', width: 0.3, style: 'b' },
-        { text: String(datos.cliente || ''), align: 'LEFT', width: 0.7 }
+        { text: 'SEÑOR(ES):', align: 'LEFT', width: 0.35, style: 'b' },
+        { text: String(datos.cliente || ''), align: 'LEFT', width: 0.65 }
       ])
       .tableCustom([
-        { text: 'NIT/CI:', align: 'LEFT', width: 0.3, style: 'b' },
-        { text: String(datos.nit || ''), align: 'LEFT', width: 0.7 }
-      ])
-      .tableCustom([
-        { text: 'FECHA:', align: 'LEFT', width: 0.3, style: 'b' },
-        { text: String(datos.fecha || ''), align: 'LEFT', width: 0.7 }
+        { text: 'NIT/CI:', align: 'LEFT', width: 0.35, style: 'b' },
+        { text: String(datos.nit || ''), align: 'LEFT', width: 0.65 }
       ])
       .text('--------------------------------');
 
-    // d. Cabecera de la tabla de productos (4 columnas ajustadas para 32 caracteres)
+    // d. Cabecera de la tabla de productos (4 columnas ajustadas a porcentajes exactos)
     printer
       .style('b')
       .tableCustom([
-        { text: 'CANT', align: 'LEFT', width: 0.15 },
-        { text: 'DETALLE', align: 'LEFT', width: 0.44 },
-        { text: 'P.UNI', align: 'RIGHT', width: 0.19 },
+        { text: 'CANT', align: 'LEFT', width: 0.16 },
+        { text: 'DETALLE', align: 'LEFT', width: 0.41 },
+        { text: 'P.UNI', align: 'RIGHT', width: 0.21 },
         { text: 'TOTAL', align: 'RIGHT', width: 0.22 }
       ])
       .style('normal');
@@ -358,16 +354,16 @@ app.post('/imprimir-ticket', async (req, res) => {
       
       if (item.subtotal > 0) {
         printer.tableCustom([
-          { text: cantStr, align: 'LEFT', width: 0.15 },
-          { text: String(item.nombre), align: 'LEFT', width: 0.44 },
-          { text: Number(pUnit).toFixed(2).replace('.', ','), align: 'RIGHT', width: 0.19 },
+          { text: cantStr, align: 'LEFT', width: 0.16 },
+          { text: String(item.nombre), align: 'LEFT', width: 0.41 },
+          { text: Number(pUnit).toFixed(2).replace('.', ','), align: 'RIGHT', width: 0.21 },
           { text: Number(item.subtotal).toFixed(2).replace('.', ','), align: 'RIGHT', width: 0.22 }
         ]);
       } else {
         // Es un borde o extra sin costo: ocultar precio y añadir sangría al detalle
         printer.tableCustom([
-          { text: cantStr, align: 'LEFT', width: 0.15 },
-          { text: `  ${String(item.nombre)}`, align: 'LEFT', width: 0.85 }
+          { text: cantStr, align: 'LEFT', width: 0.16 },
+          { text: `  ${String(item.nombre)}`, align: 'LEFT', width: 0.84 }
         ]);
       }
     });
