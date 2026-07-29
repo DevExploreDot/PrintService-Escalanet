@@ -82,13 +82,13 @@ Name: "{commonstartup}\POS Printer Service"; Filename: "wscript.exe"; Parameters
 ; Para sistemas de 64 bits
 Filename: "{cmd}"; Parameters: "/c if exist ""{app}\drivers-usb\knup\*.inf"" pnputil /add-driver ""{app}\drivers-usb\knup\*.inf"" /install"; Flags: runhidden; StatusMsg: "Instalando driver Knup..."; Check: IsWin64 and DirExists(ExpandConstant('{app}\drivers-usb\knup'))
 Filename: "{cmd}"; Parameters: "/c if exist ""{app}\drivers-usb\epson-tm\*.inf"" pnputil /add-driver ""{app}\drivers-usb\epson-tm\*.inf"" /install"; Flags: runhidden; StatusMsg: "Instalando driver Epson..."; Check: IsWin64 and DirExists(ExpandConstant('{app}\drivers-usb\epson-tm'))
-Filename: "{cmd}"; Parameters: "/c if exist ""{app}\drivers-usb\bematech-i9\*.inf"" pnputil /add-driver ""{app}\drivers-usb\bematech-i9\*.inf"" /install"; Flags: runhidden; StatusMsg: "Instalando driver Bematech..."; Check: IsWin64 and DirExists(ExpandConstant('{app}\drivers-usb\bematech-i9'))
+; Filename: "{cmd}"; Parameters: "/c if exist ""{app}\drivers-usb\bematech-i9\*.inf"" pnputil /add-driver ""{app}\drivers-usb\bematech-i9\*.inf"" /install"; Flags: runhidden; StatusMsg: "Instalando driver Bematech..."; Check: IsWin64 and DirExists(ExpandConstant('{app}\drivers-usb\bematech-i9'))
 Filename: "{cmd}"; Parameters: "/c if exist ""{app}\drivers-usb\logic-controls\*.inf"" pnputil /add-driver ""{app}\drivers-usb\logic-controls\*.inf"" /install"; Flags: runhidden; StatusMsg: "Instalando driver Logic Controls..."; Check: IsWin64 and DirExists(ExpandConstant('{app}\drivers-usb\logic-controls'))
 
 ; Para sistemas de 32 bits
 Filename: "{cmd}"; Parameters: "/c if exist ""{app}\drivers-usb\knup\*.inf"" pnputil /add-driver ""{app}\drivers-usb\knup\*.inf"" /install"; Flags: runhidden; StatusMsg: "Instalando driver Knup..."; Check: (not IsWin64) and DirExists(ExpandConstant('{app}\drivers-usb\knup'))
 Filename: "{cmd}"; Parameters: "/c if exist ""{app}\drivers-usb\epson-tm\*.inf"" pnputil /add-driver ""{app}\drivers-usb\epson-tm\*.inf"" /install"; Flags: runhidden; StatusMsg: "Instalando driver Epson..."; Check: (not IsWin64) and DirExists(ExpandConstant('{app}\drivers-usb\epson-tm'))
-Filename: "{cmd}"; Parameters: "/c if exist ""{app}\drivers-usb\bematech-i9\*.inf"" pnputil /add-driver ""{app}\drivers-usb\bematech-i9\*.inf"" /install"; Flags: runhidden; StatusMsg: "Instalando driver Bematech..."; Check: (not IsWin64) and DirExists(ExpandConstant('{app}\drivers-usb\bematech-i9'))
+; Filename: "{cmd}"; Parameters: "/c if exist ""{app}\drivers-usb\bematech-i9\*.inf"" pnputil /add-driver ""{app}\drivers-usb\bematech-i9\*.inf"" /install"; Flags: runhidden; StatusMsg: "Instalando driver Bematech..."; Check: (not IsWin64) and DirExists(ExpandConstant('{app}\drivers-usb\bematech-i9'))
 Filename: "{cmd}"; Parameters: "/c if exist ""{app}\drivers-usb\logic-controls\*.inf"" pnputil /add-driver ""{app}\drivers-usb\logic-controls\*.inf"" /install"; Flags: runhidden; StatusMsg: "Instalando driver Logic Controls..."; Check: (not IsWin64) and DirExists(ExpandConstant('{app}\drivers-usb\logic-controls'))
 
 ; ---- Arrancar el servicio de impresion al terminar la instalacion ----
