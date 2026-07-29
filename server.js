@@ -159,24 +159,26 @@ app.get('/api/detectar', (req, res) => {
   }
 
   // --- NUEVO: Buscar impresoras compartidas en Windows (SMB) ---
+  // Utilizamos PowerShell en lugar de wmic, ya que wmic está obsoleto en Windows 11 y puede fallar.
   try {
-    const stdout = execSync('wmic printer get Name,ShareName /format:csv', { encoding: 'utf-8', stdio: ['pipe', 'pipe', 'ignore'] });
+    const psCommand = `powershell.exe -NoProfile -Command "Get-WmiObject Win32_Printer | Where-Object {$_.Shared -eq $true} | Select-Object ShareName | ConvertTo-Csv -NoTypeInformation"`;
+    const stdout = execSync(psCommand, { encoding: 'utf-8', stdio: ['pipe', 'pipe', 'ignore'] });
     const lineas = stdout.trim().split('\n');
+    
+    // Saltamos la primera línea que es el encabezado ("ShareName")
     for (let i = 1; i < lineas.length; i++) {
-      const partes = lineas[i].trim().split(',');
-      if (partes.length >= 3) {
-        const shareName = partes[2].trim();
-        if (shareName) {
-           listado.push({
-             vid: 'smb',
-             pid: shareName,
-             name: `Red Compartida (Windows): ${shareName}`
-           });
-        }
+      // PowerShell arroja los valores entre comillas, ej: "ELGIN"
+      const shareName = lineas[i].replace(/"/g, '').trim();
+      if (shareName) {
+         listado.push({
+           vid: 'smb',
+           pid: shareName,
+           name: `Red Compartida (Windows): ${shareName}`
+         });
       }
     }
   } catch (error) {
-    console.error('Error listando impresoras de red:', error.message);
+    console.error('Error listando impresoras de red por PowerShell:', error.message);
   }
   // -------------------------------------------------------------
 
