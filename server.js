@@ -384,27 +384,47 @@ app.post('/imprimir-ticket', async (req, res) => {
       
       if (item.subtotal > 0) {
         let maxNameLen = Math.floor(0.46 * ANCHO_TICKET); // 46% del ancho real del ticket
-        let nombreLargo = String(item.nombre);
+        let palabras = String(item.nombre).split(' ');
+        let lineasNombre = [];
+        let lineaActual = '';
+
+        // Separar el nombre en múltiples líneas respetando los espacios (Word Wrap)
+        for (let palabra of palabras) {
+          if (lineaActual === '') {
+            lineaActual = palabra;
+          } else if ((lineaActual + ' ' + palabra).length <= maxNameLen) {
+            lineaActual += ' ' + palabra;
+          } else {
+            lineasNombre.push(lineaActual);
+            lineaActual = palabra;
+          }
+          
+          // Por si hay una palabra gigante que no tiene espacios y supera el límite
+          while (lineaActual.length > maxNameLen) {
+            lineasNombre.push(lineaActual.substring(0, maxNameLen));
+            lineaActual = lineaActual.substring(maxNameLen);
+          }
+        }
+        if (lineaActual !== '') {
+          lineasNombre.push(lineaActual);
+        }
         
         // Primera línea con cantidades y precios
         printer.tableCustom([
           { text: cantStr, align: 'LEFT', width: 0.14 },
-          { text: nombreLargo.substring(0, maxNameLen), align: 'LEFT', width: 0.46 },
+          { text: lineasNombre[0] || '', align: 'LEFT', width: 0.46 },
           { text: Number(pUnit).toFixed(2).replace('.', ','), align: 'RIGHT', width: 0.20 },
           { text: Number(item.subtotal).toFixed(2).replace('.', ','), align: 'RIGHT', width: 0.20 }
         ]);
 
-        // Si el nombre es más largo de lo que entra, imprimimos las líneas sobrantes abajo
-        let charsImpresos = maxNameLen;
-        while (charsImpresos < nombreLargo.length) {
-          let pedazo = nombreLargo.substring(charsImpresos, charsImpresos + maxNameLen);
+        // Si el nombre ocupó más de una línea, imprimimos las líneas sobrantes abajo
+        for (let i = 1; i < lineasNombre.length; i++) {
           printer.tableCustom([
             { text: '', align: 'LEFT', width: 0.14 },
-            { text: pedazo, align: 'LEFT', width: 0.46 },
+            { text: lineasNombre[i], align: 'LEFT', width: 0.46 },
             { text: '', align: 'RIGHT', width: 0.20 },
             { text: '', align: 'RIGHT', width: 0.20 }
           ]);
-          charsImpresos += maxNameLen;
         }
 
       } else {
