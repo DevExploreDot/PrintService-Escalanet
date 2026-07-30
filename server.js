@@ -521,6 +521,61 @@ app.post('/imprimir-ticket', async (req, res) => {
   }
 });
 
+/**
+ * POST /imprimir-base64
+ * Endpoint que recibe un Base64 (generado por Laravel) y lo manda directo
+ * por el puerto USB sin modificar nada.
+ */
+app.post('/imprimir-base64', (req, res) => {
+  const { payload } = req.body;
+  
+  if (!payload) {
+    return res.status(400).json({ ok: false, mensaje: 'No se envió ningún payload en Base64' });
+  }
+
+  const config = leerConfig();
+  
+  if (!config) {
+    return res.status(400).json({ ok: false, mensaje: 'No hay impresora configurada. Visita /api/detectar' });
+  }
+
+  // Convertimos el base64 a un buffer crudo
+  const buffer = Buffer.from(payload, 'base64');
+
+  // Inicializar el dispositivo usando los adaptadores que ya soporta el puente
+  let device;
+  try {
+    if (config.vid === 'smb') {
+      device = new WindowsSMBAdapter(config.pid);
+    } else {
+      device = new USB(parseInt(config.vid), parseInt(config.pid));
+    }
+  } catch (error) {
+    return res.status(503).json({ ok: false, mensaje: 'No se encontró la impresora configurada físicamente.' });
+  }
+
+  // Abrir conexión, escribir binario y cerrar
+  device.open((err) => {
+    if (err) {
+      console.error('Error abriendo dispositivo:', err);
+      return res.status(500).json({ ok: false, mensaje: 'Error abriendo impresora: ' + err.message });
+    }
+
+    device.write(buffer, (errWrite) => {
+      // Siempre intentamos cerrar el dispositivo para liberar el puerto
+      device.close();
+
+      if (errWrite) {
+        console.error('Error escribiendo a la impresora:', errWrite);
+        return res.status(500).json({ ok: false, mensaje: 'Error transfiriendo datos: ' + errWrite.message });
+      }
+
+      console.log('✅ Ticket impreso exitosamente desde Base64 (Laravel)!');
+      res.json({ ok: true, mensaje: 'Ticket impreso correctamente' });
+    });
+  });
+});
+
 // Iniciamos el servidor
 app.listen(PUERTO, '127.0.0.1', () => {
   console.log(`✅ Puente de impresión corriendo en http://localhost:${PUERTO}`);
