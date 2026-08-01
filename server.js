@@ -5,6 +5,8 @@ const cors = require('cors');
 const { Printer, Image } = require('@node-escpos/core');
 // Importamos el adaptador USB. Usualmente en CommonJS requerimos el .default
 const USB = require('@node-escpos/usb-adapter');
+const { SerialPort } = require('serialport');
+const Serial = require('@node-escpos/serialport-adapter');
 
 const fs = require('fs');
 const path = require('path');
@@ -130,7 +132,7 @@ const KNOWN_MODELS = {
   '1208:3626': 'Epson TM-T88VI'
 };
 
-app.get('/api/detectar', (req, res) => {
+app.get('/api/detectar', async (req, res) => {
   let listado = [];
   try {
     // getDeviceList() lista absolutamente todo lo conectado por USB (impresora, mouse, hub...)
@@ -179,6 +181,21 @@ app.get('/api/detectar', (req, res) => {
     }
   } catch (error) {
     console.error('Error listando impresoras de red por PowerShell:', error.message);
+  }
+  // -------------------------------------------------------------
+
+  // --- NUEVO: Buscar Puertos COM (Seriales) ---
+  try {
+    const puertos = await SerialPort.list();
+    puertos.forEach(puerto => {
+      listado.push({
+        vid: 'serial',
+        pid: puerto.path,
+        name: `Puerto Serial: ${puerto.path} ${puerto.manufacturer ? '('+puerto.manufacturer+')' : ''}`
+      });
+    });
+  } catch (error) {
+    console.error('Error listando puertos seriales:', error.message);
   }
   // -------------------------------------------------------------
 
@@ -286,6 +303,10 @@ app.post('/imprimir-ticket', async (req, res) => {
   try {
     if (vid === 'smb') {
       device = new WindowsSMBAdapter(pid); // pid almacena el shareName
+    } else if (vid === 'serial') {
+      // Para Serial, pid almacena el nombre del puerto (ej: 'COM1'). 
+      // 9600 es el baudRate estándar para la mayoría de impresoras térmicas
+      device = new Serial(pid, { baudRate: 9600 }); 
     } else {
       device = new USB(parseInt(vid), parseInt(pid));
     }
@@ -547,6 +568,8 @@ app.post('/imprimir-base64', (req, res) => {
   try {
     if (config.vid === 'smb') {
       device = new WindowsSMBAdapter(config.pid);
+    } else if (config.vid === 'serial') {
+      device = new Serial(config.pid, { baudRate: 9600 });
     } else {
       device = new USB(parseInt(config.vid), parseInt(config.pid));
     }
